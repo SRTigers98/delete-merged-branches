@@ -1,10 +1,22 @@
 #!/bin/sh
 
-# Delete merged branches
-merged_branches=$(git branch -r --merged | cat | sed 's/  //g')
+### Setup
+origin="${ORIGIN:-origin}"
+
+### Delete merged branches
+merged_branches=$(git branch -r --merged | cat | sed "s/  origin\///g")
 
 while IFS= read -r branch; do
     merged_branches=$(echo "$merged_branches" | grep -v "$branch")
 done < whitelist
 
-echo "$merged_branches"
+if [ ! -z "$merged_branches" ]; then
+    while IFS= read -r branch; do
+        echo "Deleting branch $branch..."
+        if [ -z "$DRY_RUN" ]; then
+            git push "$origin" --delete "$branch"
+        fi
+    done < <(echo "$merged_branches")
+else
+    echo "No merged branches to delete!"
+fi
