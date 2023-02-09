@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Delete merged branches
+merged_branches=$(git branch -r --merged | cat | sed 's/  //g')
+
+while IFS= read -r branch; do
+    merged_branches=$(echo "$merged_branches" | grep -v "$branch")
+done < whitelist
+
+echo "$merged_branches"
